@@ -78,17 +78,21 @@ Use `{{ColumnName}}` in your email draft to insert data from your spreadsheet:
 
 ## Contributing
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) for commit messages:
-
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `docs:` - Documentation changes
-- `style:` - Code style changes
-- `refactor:` - Code refactoring
-- `test:` - Adding or updating tests
-- `chore:` - Maintenance tasks
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
 
 Example: `feat: add support for BCC recipients`
+
+## Why did I spend time on this?
+
+You'd think mail merge from gmail would be totally solved problem at this point, but in 202509, I still hit issues:
+* [GMail first class support](https://support.google.com/mail/answer/12921167?hl=en)
+  * 👎 Required paying for Google Workspace.  I was ok to do this because could get it for 14 days free.
+  * 👎 It ended up not identifying the columns in my spreadsheet correctly and insisting on a name, when I just want a column with one or more emails concatenated in a given cell if I wanted to sent to multiple people.
+* Mail Merge for Gmail
+  * 👎 To remove their branding from emails means a paid plan, and paid play is annual, so like $36 a year.
+* Yet Another Mail Merge
+  * I have used this in the past and it works great, but..
+  * 👎 Free plan limited to 20 recipients per day, and I had 100 to send to.  
 
 ## Attribution
 
