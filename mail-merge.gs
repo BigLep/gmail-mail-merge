@@ -37,15 +37,35 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Mail Merge')
       .addItem('Send Emails', 'sendEmails')
+      .addItem('Draft Emails', 'draftEmails')
       .addToUi();
 }
  
+/**
+ * Creates draft emails from sheet data instead of sending them.
+ * @param {string} subjectLine (optional) for the email draft message
+ * @param {Sheet} sheet to read data from
+*/
+function draftEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
+  processEmails(subjectLine, sheet, true); // true = create drafts
+}
+
 /**
  * Sends emails from sheet data.
  * @param {string} subjectLine (optional) for the email draft message
  * @param {Sheet} sheet to read data from
 */
 function sendEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
+  processEmails(subjectLine, sheet, false); // false = send emails
+}
+
+/**
+ * Process emails from sheet data - either send or create drafts.
+ * @param {string} subjectLine (optional) for the email draft message
+ * @param {Sheet} sheet to read data from
+ * @param {boolean} createDrafts true to create drafts, false to send emails
+*/
+function processEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet(), createDrafts=false) {
   // option to skip browser prompt if you want to use this code in other projects
   if (!subjectLine){
     subjectLine = Browser.inputBox("Mail Merge", 
@@ -96,20 +116,39 @@ function sendEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
         const primaryRecipient = recipients[0];
         const additionalRecipients = recipients.slice(1);
 
-        // Using MailApp for reliable Unicode/emoji support and better encoding
-        // See https://developers.google.com/apps-script/reference/mail/mail-app#sendEmail(String,String,String,Object)
-        // MailApp handles emojis correctly where GmailApp can corrupt them during draft processing
-        MailApp.sendEmail(primaryRecipient, msgObj.subject, msgObj.text, {
-          htmlBody: msgObj.html,
-          cc: additionalRecipients.length > 0 ? additionalRecipients.join(',') : undefined,
-          // bcc: 'a.bcc@email.com',
-          // name: 'name of the sender',
-          // replyTo: 'a.reply@email.com',
-          attachments: emailTemplate.attachments
-          // Note: MailApp doesn't support inlineImages - they become regular attachments
-        });
-        // Edits cell to record email sent date
-        out.push([new Date()]);
+        if (createDrafts) {
+          // Create draft using GmailApp with smart emoji conversion
+          // Automatically converts problematic emojis to HTML entities to prevent corruption
+          const draftMsg = prepareMessageForDraft_(msgObj);
+          
+          GmailApp.createDraft(primaryRecipient, draftMsg.subject, draftMsg.text, {
+            htmlBody: draftMsg.html,
+            cc: additionalRecipients.length > 0 ? additionalRecipients.join(',') : undefined,
+            // bcc: 'a.bcc@email.com',
+            // from: 'an.alias@email.com', 
+            // name: 'name of the sender',
+            // replyTo: 'a.reply@email.com',
+            attachments: emailTemplate.attachments,
+            inlineImages: emailTemplate.inlineImages
+          });
+          // Record draft created date
+          out.push([`Draft created ${new Date()}`]);
+        } else {
+          // Send email using MailApp for reliable Unicode/emoji support
+          // See https://developers.google.com/apps-script/reference/mail/mail-app#sendEmail(String,String,String,Object)
+          // MailApp handles emojis correctly where GmailApp can corrupt them during draft processing
+          MailApp.sendEmail(primaryRecipient, msgObj.subject, msgObj.text, {
+            htmlBody: msgObj.html,
+            cc: additionalRecipients.length > 0 ? additionalRecipients.join(',') : undefined,
+            // bcc: 'a.bcc@email.com',
+            // name: 'name of the sender',
+            // replyTo: 'a.reply@email.com',
+            attachments: emailTemplate.attachments
+            // Note: MailApp doesn't support inlineImages - they become regular attachments
+          });
+          // Record email sent date
+          out.push([new Date()]);
+        }
       } catch(e) {
         // modify cell to record error
         out.push([e.message]);
@@ -177,8 +216,66 @@ function sendEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
   }
   
   /**
+   * Convert emojis to HTML entities to prevent corruption in Gmail drafts
+   * @param {string} text containing emojis
+   * @return {string} text with emojis converted to HTML entities
+  */
+  function convertEmojisToHtmlEntities_(text) {
+    if (!text) return text;
+    
+    // Common emoji mappings to HTML entities
+    const emojiMap = {
+      // Your specific emojis
+      '🥏': '&#127949;',        // frisbee
+      '🐶': '&#128054;',        // dog
+      '🤔': '&#129300;',        // thinking face
+      '🙋': '&#128587;',        // raising hand
+      
+      // Common emojis that might get corrupted
+      '😀': '&#128512;',        // grinning face
+      '😁': '&#128513;',        // beaming face
+      '😂': '&#128514;',        // face with tears of joy
+      '😊': '&#128522;',        // smiling face with smiling eyes
+      '👍': '&#128077;',        // thumbs up
+      '👎': '&#128078;',        // thumbs down
+      '❤️': '&#10764;&#65039;', // red heart with variant selector
+      '🎉': '&#127881;',        // party popper
+      '🔥': '&#128293;',        // fire
+      '💯': '&#128175;',        // hundred points
+      '🚀': '&#128640;',        // rocket
+      '⭐': '&#11088;',         // star
+      '✨': '&#10024;',         // sparkles
+      
+      // Keep simple emojis that work well (these are commented out - no conversion needed)
+      // '☑️': '☑️',             // checkbox (works fine)
+      // '✉️': '✉️',             // envelope (works fine) 
+      // '❓': '❓',             // question mark (works fine)
+    };
+    
+    let result = text;
+    for (const [emoji, entity] of Object.entries(emojiMap)) {
+      const regex = new RegExp(emoji, 'g');
+      result = result.replace(regex, entity);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Smart emoji handling for draft creation - converts problematic emojis to HTML entities
+   * @param {object} msgObj message object with subject, text, html properties
+   * @return {object} message object with emojis converted for draft compatibility
+  */
+  function prepareMessageForDraft_(msgObj) {
+    return {
+      subject: convertEmojisToHtmlEntities_(msgObj.subject),
+      text: convertEmojisToHtmlEntities_(msgObj.text), 
+      html: convertEmojisToHtmlEntities_(msgObj.html)
+    };
+  }
+
+  /**
    * Fill template string with data object
-   * @see https://stackoverflow.com/a/378000/1027723
    * @param {string} template string containing {{}} markers which are replaced with data
    * @param {object} data object used to replace {{}} markers
    * @return {object} message replaced with data

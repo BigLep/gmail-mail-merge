@@ -5,13 +5,16 @@ Enhanced mail merge script for Google Apps Script that sends personalized emails
 ## Features
 
 - Use Gmail draft messages as email templates
+- **Draft creation mode** - create drafts for manual review before sending
+- **Direct send mode** - send emails immediately  
 - Support for rich text content including emojis and HTML formatting
-- Multiple recipients per row (comma-separated format) 
+- Multiple recipients per row (comma-separated format)
 - Template variable substitution using `{{variable}}` syntax
-- File attachments support
-- Email tracking with sent status column
+- File attachments and inline images support (drafts only)
+- Email tracking with sent/draft status column
 - Error handling and logging
-- Uses MailApp for reliable emoji/Unicode handling
+- Uses MailApp for reliable emoji/Unicode handling (send mode)
+- Uses GmailApp for full Gmail features (draft mode)
 
 ## Setup
 
@@ -42,10 +45,34 @@ user2@example.com,user3@example.com | Jane    | Corp    |
 ```
 
 ### 3. Run Mail Merge
+
+#### Option A: Send Emails Directly
 1. In Google Sheets, you'll see a "Mail Merge" menu appear
 2. Click "Mail Merge" → "Send Emails"
 3. Enter the subject line of your Gmail draft
 4. The script will send personalized emails and update the "Email Sent" column
+
+#### Option B: Create Draft Emails (Recommended)
+1. Click "Mail Merge" → "Draft Emails" 
+2. Enter the subject line of your Gmail draft template
+3. The script creates personalized drafts in your Gmail drafts folder
+4. Review each draft manually before sending
+5. Spreadsheet shows "Draft created [timestamp]" in the status column
+
+## Draft vs Send Modes
+
+### Draft Mode Benefits (Recommended)
+- **Review before sending**: Check each personalized email manually
+- **Full Gmail features**: Inline images, rich formatting, all Gmail options
+- **Error prevention**: Catch template issues before mass sending
+- **Emoji support**: Better Unicode handling through GmailApp drafts
+- **Flexible sending**: Send drafts individually or in batches
+
+### Send Mode Benefits  
+- **Automation**: Fully automated sending process
+- **Reliable emojis**: Uses MailApp for consistent Unicode encoding
+- **Bulk processing**: Send all emails in one operation
+- **Simple workflow**: One-click sending without manual review
 
 ## Multiple Recipients
 
@@ -109,10 +136,12 @@ Licensed under the Apache License, Version 2.0. See the original license header 
 
 This version includes the following improvements over the original:
 
-1. **Multiple Recipients Support**: Send to multiple email addresses per row using comma-separated format
-2. **Reliable Emoji Support**: Uses MailApp instead of GmailApp for proper Unicode/emoji encoding
-3. **Enhanced Documentation**: Comprehensive setup and usage instructions
-4. **Conventional Commits**: Standardized commit message format for better project maintenance
+1. **Draft Creation Mode**: Create drafts for manual review instead of immediate sending
+2. **Multiple Recipients Support**: Send to multiple email addresses per row using comma-separated format
+3. **Dual Mode Operation**: Choose between draft creation (safer) or direct sending (automated)
+4. **Reliable Emoji Support**: Uses MailApp for sending, GmailApp for drafts with proper Unicode handling
+5. **Enhanced Documentation**: Comprehensive setup and usage instructions
+6. **Conventional Commits**: Standardized commit message format for better project maintenance
 
 ---
 
