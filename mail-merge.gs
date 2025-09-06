@@ -89,13 +89,18 @@ function sendEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
       try {
         const msgObj = fillInTemplateFromObject_(emailTemplate.message, row);
 
+        // Parse recipients - support comma-separated email addresses
+        const recipients = row[RECIPIENT_COL].split(',').map(email => email.trim()).filter(email => email);
+        const primaryRecipient = recipients[0];
+        const additionalRecipients = recipients.slice(1);
+
         // See https://developers.google.com/apps-script/reference/gmail/gmail-app#sendEmail(String,String,String,Object)
         // If you need to send emails with unicode/emoji characters change GmailApp for MailApp
         // Uncomment advanced parameters as needed (see docs for limitations)
-        GmailApp.sendEmail(row[RECIPIENT_COL], msgObj.subject, msgObj.text, {
+        GmailApp.sendEmail(primaryRecipient, msgObj.subject, msgObj.text, {
           htmlBody: msgObj.html,
+          cc: additionalRecipients.length > 0 ? additionalRecipients.join(',') : undefined,
           // bcc: 'a.bcc@email.com',
-          // cc: 'a.cc@email.com',
           // from: 'an.alias@email.com',
           // name: 'name of the sender',
           // replyTo: 'a.reply@email.com',
