@@ -6,11 +6,12 @@ Enhanced mail merge script for Google Apps Script that sends personalized emails
 
 - Use Gmail draft messages as email templates
 - Support for rich text content including emojis and HTML formatting
-- Multiple recipients per row (comma-separated format)
+- Multiple recipients per row (comma-separated format) 
 - Template variable substitution using `{{variable}}` syntax
-- Inline images and attachments support
+- File attachments support
 - Email tracking with sent status column
 - Error handling and logging
+- Uses MailApp for reliable emoji/Unicode handling
 
 ## Setup
 
@@ -56,11 +57,11 @@ You can specify multiple email addresses in the `Recipient` column by separating
 
 ## Rich Text and Emojis
 
-The script fully supports:
+The script uses MailApp for reliable Unicode/emoji support:
 - HTML formatting (bold, italic, colors, etc.)
-- Unicode characters and emojis 🎉
-- Inline images
+- Unicode characters and emojis 🎉 (excellent handling with MailApp)
 - File attachments
+- Note: Inline images become regular attachments (MailApp limitation)
 
 ## Template Variables
 
@@ -105,8 +106,9 @@ Licensed under the Apache License, Version 2.0. See the original license header 
 This version includes the following improvements over the original:
 
 1. **Multiple Recipients Support**: Send to multiple email addresses per row using comma-separated format
-2. **Enhanced Documentation**: Comprehensive setup and usage instructions
-3. **Conventional Commits**: Standardized commit message format for better project maintenance
+2. **Reliable Emoji Support**: Uses MailApp instead of GmailApp for proper Unicode/emoji encoding
+3. **Enhanced Documentation**: Comprehensive setup and usage instructions
+4. **Conventional Commits**: Standardized commit message format for better project maintenance
 
 ---
 

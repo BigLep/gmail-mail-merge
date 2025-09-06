@@ -94,19 +94,17 @@ function sendEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
         const primaryRecipient = recipients[0];
         const additionalRecipients = recipients.slice(1);
 
-        // See https://developers.google.com/apps-script/reference/gmail/gmail-app#sendEmail(String,String,String,Object)
-        // If you need to send emails with unicode/emoji characters change GmailApp for MailApp
-        // Uncomment advanced parameters as needed (see docs for limitations)
-        GmailApp.sendEmail(primaryRecipient, msgObj.subject, msgObj.text, {
+        // Using MailApp for reliable Unicode/emoji support and better encoding
+        // See https://developers.google.com/apps-script/reference/mail/mail-app#sendEmail(String,String,String,Object)
+        // MailApp handles emojis correctly where GmailApp can corrupt them during draft processing
+        MailApp.sendEmail(primaryRecipient, msgObj.subject, msgObj.text, {
           htmlBody: msgObj.html,
           cc: additionalRecipients.length > 0 ? additionalRecipients.join(',') : undefined,
           // bcc: 'a.bcc@email.com',
-          // from: 'an.alias@email.com',
           // name: 'name of the sender',
           // replyTo: 'a.reply@email.com',
-          // noReply: true, // if the email should be sent from a generic no-reply email address (not available to gmail.com users)
-          attachments: emailTemplate.attachments,
-          inlineImages: emailTemplate.inlineImages
+          attachments: emailTemplate.attachments
+          // Note: MailApp doesn't support inlineImages - they become regular attachments
         });
         // Edits cell to record email sent date
         out.push([new Date()]);
