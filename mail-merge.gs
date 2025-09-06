@@ -36,8 +36,9 @@ const EMAIL_SENT_COL = "Email Sent";
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Mail Merge')
-      .addItem('Send Emails', 'sendEmails')
-      .addItem('Draft Emails', 'draftEmails')
+      .addItem('Send Emails (MailApp - best emoji support)', 'sendEmails')
+      .addItem('Send Emails (GmailApp - worse emoji support)', 'sendEmailsWithGmail')
+      .addItem('Draft Emails (Gmail App - worse emoji support)', 'draftEmails')
       .addToUi();
 }
  
@@ -51,21 +52,34 @@ function draftEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
 }
 
 /**
- * Sends emails from sheet data.
+ * Sends emails from sheet data using MailApp (best emoji support).
  * @param {string} subjectLine (optional) for the email draft message
  * @param {Sheet} sheet to read data from
 */
 function sendEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
-  processEmails(subjectLine, sheet, false); // false = send emails
+  processEmails(subjectLine, sheet, 'mailapp'); // 'mailapp' = send with MailApp
 }
 
 /**
- * Process emails from sheet data - either send or create drafts.
+ * Sends emails from sheet data using GmailApp (full Gmail features).
  * @param {string} subjectLine (optional) for the email draft message
  * @param {Sheet} sheet to read data from
- * @param {boolean} createDrafts true to create drafts, false to send emails
 */
-function processEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet(), createDrafts=false) {
+function sendEmailsWithGmail(subjectLine, sheet=SpreadsheetApp.getActiveSheet()) {
+  processEmails(subjectLine, sheet, 'gmailapp'); // 'gmailapp' = send with GmailApp
+}
+
+/**
+ * Process emails from sheet data - create drafts, send with MailApp, or send with GmailApp.
+ * @param {string} subjectLine (optional) for the email draft message
+ * @param {Sheet} sheet to read data from
+ * @param {string|boolean} mode 'mailapp', 'gmailapp', or true for drafts (backward compatibility)
+*/
+function processEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet(), mode='mailapp') {
+  // Handle backward compatibility
+  const createDrafts = mode === true;
+  const useGmailApp = mode === 'gmailapp';
+  const useMailApp = mode === 'mailapp' || mode === false;
   // option to skip browser prompt if you want to use this code in other projects
   if (!subjectLine){
     subjectLine = Browser.inputBox("Mail Merge", 
@@ -133,10 +147,27 @@ function processEmails(subjectLine, sheet=SpreadsheetApp.getActiveSheet(), creat
           });
           // Record draft created date
           out.push([`Draft created ${new Date()}`]);
+        } else if (useGmailApp) {
+          // Send email using GmailApp with smart emoji conversion for full Gmail features
+          const sendMsg = prepareMessageForDraft_(msgObj); // Apply emoji conversion
+          
+          GmailApp.sendEmail(primaryRecipient, sendMsg.subject, sendMsg.text, {
+            htmlBody: sendMsg.html,
+            cc: additionalRecipients.length > 0 ? additionalRecipients.join(',') : undefined,
+            // bcc: 'a.bcc@email.com',
+            // from: 'an.alias@email.com', 
+            // name: 'name of the sender',
+            // replyTo: 'a.reply@email.com',
+            // noReply: true, // if the email should be sent from a generic no-reply email address (not available to gmail.com users)
+            attachments: emailTemplate.attachments,
+            inlineImages: emailTemplate.inlineImages
+          });
+          // Record email sent date
+          out.push([new Date()]);
         } else {
-          // Send email using MailApp for reliable Unicode/emoji support
+          // Send email using MailApp for reliable Unicode/emoji support (default)
           // See https://developers.google.com/apps-script/reference/mail/mail-app#sendEmail(String,String,String,Object)
-          // MailApp handles emojis correctly where GmailApp can corrupt them during draft processing
+          // MailApp handles emojis correctly where GmailApp can corrupt them during processing
           MailApp.sendEmail(primaryRecipient, msgObj.subject, msgObj.text, {
             htmlBody: msgObj.html,
             cc: additionalRecipients.length > 0 ? additionalRecipients.join(',') : undefined,

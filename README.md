@@ -5,16 +5,17 @@ Enhanced mail merge script for Google Apps Script that sends personalized emails
 ## Features
 
 - Use Gmail draft messages as email templates
-- **Draft creation mode** - create drafts for manual review before sending
-- **Direct send mode** - send emails immediately  
-- Support for rich text content including emojis and HTML formatting
+- **Three operation modes**: Draft creation, MailApp sending, GmailApp sending
+- **Smart emoji conversion** - automatically handles emojis in all modes  
+- **Draft mode** - create drafts for manual review before sending
+- **MailApp mode** - best emoji support with immediate sending
+- **GmailApp mode** - full Gmail features with immediate sending
 - Multiple recipients per row (comma-separated format)
 - Template variable substitution using `{{variable}}` syntax
-- File attachments and inline images support (drafts only)
+- File attachments and inline images support (draft/GmailApp modes)
+- Send-as aliases and Gmail advanced features (draft/GmailApp modes)
 - Email tracking with sent/draft status column
 - Error handling and logging
-- Uses MailApp for reliable emoji/Unicode handling (send mode)
-- Uses GmailApp for full Gmail features (draft mode)
 
 ## Setup
 
@@ -44,35 +45,40 @@ user1@example.com                   | John    | Acme    |
 user2@example.com,user3@example.com | Jane    | Corp    |
 ```
 
-### 3. Run Mail Merge
+### 3. Choose Your Mail Merge Mode
 
-#### Option A: Send Emails Directly
-1. In Google Sheets, you'll see a "Mail Merge" menu appear
-2. Click "Mail Merge" → "Send Emails"
-3. Enter the subject line of your Gmail draft
-4. The script will send personalized emails and update the "Email Sent" column
+The script offers three different modes to fit your needs:
 
-#### Option B: Create Draft Emails (Recommended)
-1. Click "Mail Merge" → "Draft Emails" 
-2. Enter the subject line of your Gmail draft template
-3. The script creates personalized drafts in your Gmail drafts folder
+#### Option A: Draft Emails (Recommended for Review)
+1. Click "Mail Merge" → "Draft Emails"
+2. Enter the subject line of your Gmail draft template  
+3. Script creates personalized drafts in your Gmail drafts folder
 4. Review each draft manually before sending
 5. Spreadsheet shows "Draft created [timestamp]" in the status column
 
-## Draft vs Send Modes
+#### Option B: Send with MailApp (Best Emoji Support)
+1. Click "Mail Merge" → "Send Emails (MailApp - best emoji support)"
+2. Enter the subject line of your Gmail draft
+3. Script sends emails immediately using MailApp
+4. Spreadsheet shows timestamp in the "Email Sent" column
 
-### Draft Mode Benefits (Recommended)
-- **Review before sending**: Check each personalized email manually
-- **Full Gmail features**: Inline images, rich formatting, all Gmail options
-- **Error prevention**: Catch template issues before mass sending
-- **Emoji support**: Better Unicode handling through GmailApp drafts
-- **Flexible sending**: Send drafts individually or in batches
+#### Option C: Send with GmailApp (Full Gmail Features)
+1. Click "Mail Merge" → "Send Emails with GmailApp (full features)" 
+2. Enter the subject line of your Gmail draft
+3. Script sends emails immediately using GmailApp with smart emoji conversion
+4. Spreadsheet shows timestamp in the "Email Sent" column
 
-### Send Mode Benefits  
-- **Automation**: Fully automated sending process
-- **Reliable emojis**: Uses MailApp for consistent Unicode encoding
-- **Bulk processing**: Send all emails in one operation
-- **Simple workflow**: One-click sending without manual review
+## Mode Comparison
+
+| Feature | Draft Mode | MailApp Send | GmailApp Send |
+|---------|------------|--------------|---------------|
+| **Review before sending** | ✅ Yes | ❌ No | ❌ No |
+| **Emoji support** | ✅ Excellent (smart conversion) | ✅ Excellent (native) | ✅ Good (smart conversion) |
+| **Inline images** | ✅ Full support | ❌ Converted to attachments | ✅ Full support |
+| **Gmail features** | ✅ All features | ⚠️ Limited | ✅ All features |
+| **From address control** | ✅ Yes | ❌ No | ✅ Yes |
+| **Send-as aliases** | ✅ Yes | ❌ No | ✅ Yes |
+| **Automation** | ⚠️ Manual sending required | ✅ Fully automated | ✅ Fully automated |
 
 ## Multiple Recipients
 
@@ -121,6 +127,11 @@ You'd think mail merge from gmail would be totally solved problem at this point,
   * I have used this in the past and it works great, but..
   * 👎 Free plan limited to 20 recipients per day, and I had 100 to send to.  
 
+## Things to be aware of
+* MailApp has good emoji support but limits the number of emails that can be sent for a day
+* GmailApp doesn't have as good of emoji support.  See https://stackoverflow.com/questions/50686254/how-to-insert-an-emoji-into-an-email-sent-with-gmailapp for an explainer.  There is no workaround for emojis in the subject line.
+* 
+
 ## Attribution
 
 Based on the original Gmail/Sheets mail merge script from Google Apps Script samples:
@@ -136,12 +147,13 @@ Licensed under the Apache License, Version 2.0. See the original license header 
 
 This version includes the following improvements over the original:
 
-1. **Draft Creation Mode**: Create drafts for manual review instead of immediate sending
-2. **Multiple Recipients Support**: Send to multiple email addresses per row using comma-separated format
-3. **Dual Mode Operation**: Choose between draft creation (safer) or direct sending (automated)
-4. **Reliable Emoji Support**: Uses MailApp for sending, GmailApp for drafts with proper Unicode handling
-5. **Enhanced Documentation**: Comprehensive setup and usage instructions
-6. **Conventional Commits**: Standardized commit message format for better project maintenance
+1. **Three Operation Modes**: Draft creation, MailApp sending, or GmailApp sending
+2. **Smart Emoji Handling**: Automatic emoji-to-HTML conversion for GmailApp compatibility  
+3. **Multiple Recipients Support**: Send to multiple email addresses per row using comma-separated format
+4. **Flexible Workflow Options**: Choose between review-first (drafts) or automated sending
+5. **Full Gmail Feature Support**: Send-as aliases, inline images, rich formatting (draft/GmailApp modes)
+6. **Enhanced Documentation**: Comprehensive setup and usage instructions with mode comparison
+7. **Conventional Commits**: Standardized commit message format for better project maintenance
 
 ---
 
