@@ -130,7 +130,12 @@ You'd think mail merge from gmail would be totally solved problem at this point,
 ## Things to be aware of
 * MailApp has good emoji support but limits the number of emails that can be sent for a day
 * GmailApp doesn't have as good of emoji support.  See https://stackoverflow.com/questions/50686254/how-to-insert-an-emoji-into-an-email-sent-with-gmailapp for an explainer.  There is no workaround for emojis in the subject line.
-* 
+* Watch out though for service limits which I hit:
+  - MailApp: ~100 emails/day (consumer Gmail) or ~1,500/day (Workspace)
+  - GmailApp: Same limits as MailApp
+  - Gmail API: Same underlying quotas but better error handling
+* Workaround for limits for me was to create a bunch of drafts and then send them 1 by 1 in the gmail app (click to open + use keystroke to send of command/enter) 
+
 
 ## Attribution
 
